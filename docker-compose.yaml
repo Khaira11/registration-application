@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: registration_db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  web:
+    build: .
+    container_name: registration-app
+    ports:
+      - "5000:5000"
+    environment:
+      MYSQL_HOST: mysql-db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+      MYSQL_DB: registration_db
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    external: true
